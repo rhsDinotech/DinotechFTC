@@ -22,8 +22,6 @@ public class DinoTech_TeleOp extends LinearOpMode {
      * }
      **/
 
-    // Elevator: Hub 2 Motor 2
-    private DcMotor ElevatorMotor = null;
 
     // LeftDrive: Hub 1 Motor 0
     private DcMotor LeftDrive = null;
@@ -39,34 +37,39 @@ public class DinoTech_TeleOp extends LinearOpMode {
 
     // Grabber: Hub 1 Servo 0
     private Servo Grabber = null;
+    /**  End Instantiate Hardware Instances **/
+
+    // setting for servo open/close acceleration
+    //    -- increase / decrease for movement speed
+    //    -- change +/- to reverse direction for right / left triggers
+    private double servoScaling = .5;
+
 
     private ElapsedTime runtime = new ElapsedTime();
 
-    private int servoScaling = 1;
+
 
     public void runOpMode() {
-        // Initialize and alert driver
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
+
+        // Initialize hardware variables
         LeftDrive = hardwareMap.get(DcMotor.class, "LeftDrive");
         RightDrive = hardwareMap.get(DcMotor.class, "RightDrive");
-        ElevatorMotor = hardwareMap.get(DcMotor.class, "ElevatorMotor");
+        /*  Instantiate Hardware Instances */ /**  Instantiate Hardware Instances **/ // Elevator: Hub 2 Motor 2
+        DcMotor elevatorMotor = hardwareMap.get(DcMotor.class, "ElevatorMotor");
         Arm = hardwareMap.get(DcMotor.class, "Arm");
         Pulley = hardwareMap.get(DcMotor.class, "Pulley");
         Grabber = hardwareMap.get(Servo.class, "Grabber");
-
-
         telemetry.update();
 
 
-        // Most robots need the motor on one side to be reversed to drive forward
-        // Reverse the motor that runs backwards when connected directly to the battery
+        // Initialize  Motor Directions
         LeftDrive.setDirection(DcMotor.Direction.REVERSE);
         RightDrive.setDirection(DcMotor.Direction.FORWARD);
+
+        // Initialize and alert driver
+        telemetry.addData("Status", "Initialized");
+        telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -90,11 +93,6 @@ public class DinoTech_TeleOp extends LinearOpMode {
             leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
             rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
 
-            // Tank Mode uses one stick to control each wheel.
-            // - This requires no math, but it is hard to drive forward slowly and keep straight.
-            // leftPower  = -gamepad1.left_stick_y ;
-            // rightPower = -gamepad1.right_stick_y ;
-
             // Send calculated power to wheels
             LeftDrive.setPower(leftPower);
             RightDrive.setPower(rightPower);
@@ -103,7 +101,7 @@ public class DinoTech_TeleOp extends LinearOpMode {
             double ElvPower = gamepad1.right_stick_y;
 
             //Send Calculated Power to Elevator
-            ElevatorMotor.setPower(ElvPower);
+            elevatorMotor.setPower(ElvPower);
 
             // Define Arm Var
             double ArmPower = gamepad2.left_stick_y;
