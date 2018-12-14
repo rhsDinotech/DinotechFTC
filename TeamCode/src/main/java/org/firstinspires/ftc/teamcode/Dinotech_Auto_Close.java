@@ -36,7 +36,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
+//import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
 
 /**
  * This file illustrates the concept of driving a path based on encoder counts.
@@ -69,15 +69,16 @@ import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
 @Disabled
 public class Dinotech_Auto_Close extends LinearOpMode {
 
+
     /* Declare OpMode members. */
 
     private ElapsedTime     runtime = new ElapsedTime();
 
     static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = .25 ;     // This is < 1.0 if geared UP
-    static final double     WHEEL_DIAMETER_INCHES   = 1.5 ;     // For figuring circumference
+    static final double     WHEEL_DIAMETER_INCHES   = 2.5 ;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-                                                      (WHEEL_DIAMETER_INCHES * 3.1415);
+            (WHEEL_DIAMETER_INCHES * 3.1415);
     static final double     DRIVE_SPEED             = 0.6;
     static final double     TURN_SPEED              = 0.5;
 
@@ -88,12 +89,30 @@ public class Dinotech_Auto_Close extends LinearOpMode {
     // RightDrive:  Hub 2 Motor 0
     private DcMotor RightDrive = null;
 
+    // Arm:  Hub 1 Motor 1
+    private DcMotor Arm = null;
+
+    //Elevator: Hub 2 Motor 1
+    private DcMotor Elevator = null;
+
+    // Pulley:  Hub 1 Motor 2
+    private DcMotor Pulley = null;
+
+    // Grabber: Hub 1 Servo 0
+    private Servo Grabber = null;
+
+    // Target Positions
+    // Grabber
+    private double openGrabber = 1;
     private double closeGrabber = 0;
 
-    private double elevatorUp = 1440;
+    // Elevator
+    private int elevatorDown = -1440;
+    private int elevatorUp = 1440;
 
-        private double armExtended = 1440*3;
-        private double armClosed = -1440*3;
+    // Arm
+    private double armExtended = 1440*3;
+    private double armClosed = -1440*3;
 
     /**  End Instantiate Hardware Instances **/
 
@@ -108,22 +127,21 @@ public class Dinotech_Auto_Close extends LinearOpMode {
         // Initialize hardware variables
         LeftDrive = hardwareMap.get(DcMotor.class, "LeftDrive");
         RightDrive = hardwareMap.get(DcMotor.class, "RightDrive");
-        /*  Instantiate Hardware Instances */ /**  Instantiate Hardware Instances **/ // Elevator: Hub 2 Motor 2
-        DcMotor elevatorMotor = hardwareMap.get(DcMotor.class, "ElevatorMotor");
-        // Arm:  Hub 1 Motor 1
-        DcMotor arm = hardwareMap.get(DcMotor.class, "Arm");
-        // Pulley:  Hub 1 Motor 2
-        DcMotor pulley = hardwareMap.get(DcMotor.class, "Pulley");
-        // Grabber: Hub 1 Servo 0
-        Servo grabber = hardwareMap.get(Servo.class, "Grabber");
+
+        /*  Instantiate Hardware Instances */
+        // Elevator: Hub 2 Motor 2
+        Elevator = hardwareMap.get(DcMotor.class, "ElevatorMotor");
+        Arm = hardwareMap.get(DcMotor.class, "Arm");
+        Pulley = hardwareMap.get(DcMotor.class, "Pulley");
+        Grabber = hardwareMap.get(Servo.class, "Grabber");
         telemetry.update();
 
         // Initialize  Motor Directions & reset encoders
         LeftDrive.setDirection(DcMotor.Direction.REVERSE);
         RightDrive.setDirection(DcMotor.Direction.FORWARD);
-        elevatorMotor.setDirection(DcMotor.Direction.FORWARD);
-        arm.setDirection(DcMotor.Direction.FORWARD);
-        pulley.setDirection(DcMotor.Direction.FORWARD);
+        Elevator.setDirection(DcMotor.Direction.FORWARD);
+        Arm.setDirection(DcMotor.Direction.FORWARD);
+        Pulley.setDirection(DcMotor.Direction.FORWARD);
 
 
         // Initialize and alert driver
@@ -134,21 +152,21 @@ public class Dinotech_Auto_Close extends LinearOpMode {
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Resetting Encoders");    //
         telemetry.update();
-        
+
         LeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         RightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        elevatorMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Elevator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         LeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         RightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        
-        
+
+
         // Send telemetry message to indicate successful Encoder reset
         telemetry.addData("Path0",  "Starting at %7d :%7d  Elevator %7d  Arm: %7d",
                 LeftDrive.getCurrentPosition(),
                 RightDrive.getCurrentPosition());
-                elevatorMotor.getCurrentPosition();
+        Elevator.getCurrentPosition();
 
         telemetry.update();
 
@@ -157,14 +175,13 @@ public class Dinotech_Auto_Close extends LinearOpMode {
 
 
         /** Actual Autonomous Mode Driving Path
-            Step through each leg of the path,
-            Note: Reverse movement is obtained by setting a negative distance (not speed) **/
+         Step through each leg of the path,
+         Note: Reverse movement is obtained by setting a negative distance (not speed)
+         **/
 
 
         // drop down from holding position
-        // Target Positions -  Elevator
-        double elevatorDown = -1440;
-        elevatorMotor.setTargetPosition(elevatorDown);
+        Elevator.setTargetPosition(elevatorDown);
 
         // turn away from the lander
 
@@ -173,18 +190,15 @@ public class Dinotech_Auto_Close extends LinearOpMode {
         // drive to ball pit
 
         // open grabber and release flag - change openGrabber to update
-        // Target Positions
-        // Grabber
-        double openGrabber = 1;
-        grabber.setPosition(openGrabber);
+        Grabber.setPosition(openGrabber);
         sleep(1000);     // pause for servos to move
 
 
         /** example encoder turning
-            encoderDrive(DRIVE_SPEED,  48,  48, 5.0);  // S1: Forward 47 Inches with 5 Sec timeout
-            encoderDrive(TURN_SPEED,   12, -12, 4.0);  // S2: Turn Right 12 Inches with 4 Sec timeout
-            encoderDrive(DRIVE_SPEED, -24, -24, 4.0);  // S3: Reverse 24 Inches with 4 Sec timeout
-        **/
+         encoderDrive(DRIVE_SPEED,  48,  48, 5.0);  // S1: Forward 47 Inches with 5 Sec timeout
+         encoderDrive(TURN_SPEED,   12, -12, 4.0);  // S2: Turn Right 12 Inches with 4 Sec timeout
+         encoderDrive(DRIVE_SPEED, -24, -24, 4.0);  // S3: Reverse 24 Inches with 4 Sec timeout
+         **/
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
@@ -229,14 +243,14 @@ public class Dinotech_Auto_Close extends LinearOpMode {
             // However, if you require that BOTH motors have finished their moves before the robot continues
             // onto the next step, use (isBusy() || isBusy()) in the loop test.
             while (opModeIsActive() &&
-                   (runtime.seconds() < timeoutS) &&
-                   (LeftDrive.isBusy() && RightDrive.isBusy())) {
+                    (runtime.seconds() < timeoutS) &&
+                    (LeftDrive.isBusy() && RightDrive.isBusy())) {
 
                 // Display it for the driver.
                 telemetry.addData("Path1",  "Running to %7d :%7d", newLeftTarget,  newRightTarget);
                 telemetry.addData("Path2",  "Running at %7d :%7d",
-                                            LeftDrive.getCurrentPosition(),
-                                            RightDrive.getCurrentPosition());
+                        LeftDrive.getCurrentPosition(),
+                        RightDrive.getCurrentPosition());
                 telemetry.update();
             }
 

@@ -36,7 +36,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
+//import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
 
 /**
  * This file illustrates the concept of driving a path based on encoder counts.
@@ -76,7 +76,7 @@ public class Dinotech_Auto_Far extends LinearOpMode {
 
     static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = .25 ;     // This is < 1.0 if geared UP
-    static final double     WHEEL_DIAMETER_INCHES   = 1.5 ;     // For figuring circumference
+    static final double     WHEEL_DIAMETER_INCHES   = 2.5 ;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * 3.1415);
     static final double     DRIVE_SPEED             = 0.6;
@@ -92,6 +92,9 @@ public class Dinotech_Auto_Far extends LinearOpMode {
     // Arm:  Hub 1 Motor 1
     private DcMotor Arm = null;
 
+    //Elevator: Hub 2 Motor 1
+    private DcMotor Elevator = null;
+
     // Pulley:  Hub 1 Motor 2
     private DcMotor Pulley = null;
 
@@ -103,10 +106,11 @@ public class Dinotech_Auto_Far extends LinearOpMode {
     private double openGrabber = 1;
     private double closeGrabber = 0;
 
-    // Target Positions -  Elevator
+    // Elevator
     private int elevatorDown = -1440;
     private int elevatorUp = 1440;
 
+    // Arm
     private double armExtended = 1440*3;
     private double armClosed = -1440*3;
 
@@ -123,8 +127,10 @@ public class Dinotech_Auto_Far extends LinearOpMode {
         // Initialize hardware variables
         LeftDrive = hardwareMap.get(DcMotor.class, "LeftDrive");
         RightDrive = hardwareMap.get(DcMotor.class, "RightDrive");
-        /*  Instantiate Hardware Instances */ /**  Instantiate Hardware Instances **/ // Elevator: Hub 2 Motor 2
-        DcMotor elevatorMotor = hardwareMap.get(DcMotor.class, "ElevatorMotor");
+
+        /*  Instantiate Hardware Instances */
+        // Elevator: Hub 2 Motor 2
+        Elevator = hardwareMap.get(DcMotor.class, "ElevatorMotor");
         Arm = hardwareMap.get(DcMotor.class, "Arm");
         Pulley = hardwareMap.get(DcMotor.class, "Pulley");
         Grabber = hardwareMap.get(Servo.class, "Grabber");
@@ -133,7 +139,7 @@ public class Dinotech_Auto_Far extends LinearOpMode {
         // Initialize  Motor Directions & reset encoders
         LeftDrive.setDirection(DcMotor.Direction.REVERSE);
         RightDrive.setDirection(DcMotor.Direction.FORWARD);
-        elevatorMotor.setDirection(DcMotor.Direction.FORWARD);
+        Elevator.setDirection(DcMotor.Direction.FORWARD);
         Arm.setDirection(DcMotor.Direction.FORWARD);
         Pulley.setDirection(DcMotor.Direction.FORWARD);
 
@@ -149,7 +155,7 @@ public class Dinotech_Auto_Far extends LinearOpMode {
 
         LeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         RightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        elevatorMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Elevator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         Arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         LeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -160,7 +166,7 @@ public class Dinotech_Auto_Far extends LinearOpMode {
         telemetry.addData("Path0",  "Starting at %7d :%7d  Elevator %7d  Arm: %7d",
                 LeftDrive.getCurrentPosition(),
                 RightDrive.getCurrentPosition());
-        elevatorMotor.getCurrentPosition();
+                Elevator.getCurrentPosition();
 
         telemetry.update();
 
@@ -175,7 +181,7 @@ public class Dinotech_Auto_Far extends LinearOpMode {
 
 
         // drop down from holding position
-        elevatorMotor.setTargetPosition(elevatorDown);
+        Elevator.setTargetPosition(elevatorDown);
 
         // turn away from the lander
 
