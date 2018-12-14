@@ -1,0 +1,11 @@
+
+
+Hub 1
+Motor 0: Left_Drive
+Motor 1: Arm_Motor
+Motor 2: Slide_Pulley
+Servo 0: Grabber
+
+Hub 2
+Motor 0: Right_Drive
+Motor 1: Elevator
