@@ -65,8 +65,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Pushbot: Auto Drive By Encoder", group="Pushbot")
-@Disabled
+@Autonomous(name="Auto-Close", group="Pushbot")
 public class Dinotech_Auto_Close extends LinearOpMode {
 
 
@@ -112,9 +111,9 @@ public class Dinotech_Auto_Close extends LinearOpMode {
 
     // Arm
     private double armExtended = 1440*3;
-    private double armClosed = -1440*3;
 
     /**  End Instantiate Hardware Instances **/
+    private double armClosed = -1440*3;
 
     // setting for servo open/close acceleration
     //    -- increase / decrease for movement speed
@@ -155,7 +154,7 @@ public class Dinotech_Auto_Close extends LinearOpMode {
 
         LeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         RightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        Elevator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Elevator.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         Arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         LeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -163,10 +162,10 @@ public class Dinotech_Auto_Close extends LinearOpMode {
 
 
         // Send telemetry message to indicate successful Encoder reset
-        telemetry.addData("Path0",  "Starting at %7d :%7d  Elevator %7d  Arm: %7d",
-                LeftDrive.getCurrentPosition(),
-                RightDrive.getCurrentPosition());
-        Elevator.getCurrentPosition();
+        // telemetry.addData("Path0",  "Starting at %7d :%7d  Elevator %7d  Arm: %7d",
+                LeftDrive.getCurrentPosition();
+                RightDrive.getCurrentPosition();
+                Elevator.getCurrentPosition();
 
         telemetry.update();
 
@@ -180,8 +179,7 @@ public class Dinotech_Auto_Close extends LinearOpMode {
          **/
 
 
-        // drop down from holding position
-        Elevator.setTargetPosition(elevatorDown);
+        Elevator.setPower(0.5f);
 
         // turn away from the lander
 
@@ -190,8 +188,8 @@ public class Dinotech_Auto_Close extends LinearOpMode {
         // drive to ball pit
 
         // open grabber and release flag - change openGrabber to update
-        Grabber.setPosition(openGrabber);
-        sleep(1000);     // pause for servos to move
+        //Grabber.setPosition(openGrabber);
+        sleep(25000);     // pause for servos to move
 
 
         /** example encoder turning
@@ -221,20 +219,6 @@ public class Dinotech_Auto_Close extends LinearOpMode {
         // Ensure that the opmode is still active
         if (opModeIsActive()) {
 
-            // Determine new target position, and pass to motor controller
-            newLeftTarget = LeftDrive.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newRightTarget = RightDrive.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
-            LeftDrive.setTargetPosition(newLeftTarget);
-            RightDrive.setTargetPosition(newRightTarget);
-
-            // Turn On RUN_TO_POSITION
-            LeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            RightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            // reset the timeout time and start motion.
-            runtime.reset();
-            LeftDrive.setPower(Math.abs(speed));
-            RightDrive.setPower(Math.abs(speed));
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
@@ -242,25 +226,10 @@ public class Dinotech_Auto_Close extends LinearOpMode {
             // always end the motion as soon as possible.
             // However, if you require that BOTH motors have finished their moves before the robot continues
             // onto the next step, use (isBusy() || isBusy()) in the loop test.
-            while (opModeIsActive() &&
-                    (runtime.seconds() < timeoutS) &&
-                    (LeftDrive.isBusy() && RightDrive.isBusy())) {
+            while (opModeIsActive()){
 
-                // Display it for the driver.
-                telemetry.addData("Path1",  "Running to %7d :%7d", newLeftTarget,  newRightTarget);
-                telemetry.addData("Path2",  "Running at %7d :%7d",
-                        LeftDrive.getCurrentPosition(),
-                        RightDrive.getCurrentPosition());
-                telemetry.update();
             }
 
-            // Stop all motion;
-            LeftDrive.setPower(0);
-            RightDrive.setPower(0);
-
-            // Turn off RUN_TO_POSITION
-            LeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            RightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
             //  sleep(250);   // optional pause after each move
         }
